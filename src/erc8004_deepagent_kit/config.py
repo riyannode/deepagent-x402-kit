@@ -165,7 +165,7 @@ def load_config(env_file: str | None = None) -> KitConfig:
         identity_registry=identity_registry,
         reputation_registry=reputation_registry,
         validation_registry=validation_registry,
-        from_block=_env_int("ERC8004_FROM_BLOCK", 41752050, min_value=0),
+        from_block=_env_int("ERC8004_FROM_BLOCK", 41338000, min_value=0),
         event_scan_block_range=_env_int("EVENT_SCAN_BLOCK_RANGE", 10000, min_value=1, max_value=10000),
         circle_api_key=_env("CIRCLE_API_KEY"),
         circle_entity_secret=_env("CIRCLE_ENTITY_SECRET"),

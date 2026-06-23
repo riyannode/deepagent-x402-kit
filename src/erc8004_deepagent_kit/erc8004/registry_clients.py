@@ -75,6 +75,11 @@ class IdentityRegistryClient:
             return -1
 
     def find_registered_by_owner(self, owner: str) -> OnchainIdentity | None:
+        """Scan Transfer events from ERC8004_FROM_BLOCK to latest.
+
+        Always scans the full range. No balanceOf fast-path, no auto-narrow.
+        If RPC fails, raises (fail-closed) — caller must not submit a tx.
+        """
         owner = Web3.to_checksum_address(owner)
         latest = self._latest_block()
         events: list[MintEvent] = []
@@ -82,29 +87,12 @@ class IdentityRegistryClient:
         to_topic = address_topic(owner)
         zero_topic = address_topic(ZERO_ADDRESS)
 
-        # Fast path: if wallet currently owns tokens, we definitely need to scan.
-        # If balance==0, the NFT may have been transferred out — still scan recent
-        # range to catch historical mints (duplicate prevention).
-        balance = self._balance_of(owner)
-        if balance == -1:
-            # balanceOf call failed (contract error) — proceed with full scan
-            pass
-        elif balance == 0:
-            # No current ownership, but scan recent range to catch historical mints
-            # Use a narrower window (last 100k blocks) for balance==0 case
-            recent_range = min(self.block_range * 10, 100000)
-            from_block = max(from_block, latest - recent_range)
-
         if from_block > latest:
             return None
 
-        # Auto-narrow scan range: start from recent blocks if from_block is too old
-        max_scan_blocks = self.block_range * 50  # max 500k blocks
-        if latest - from_block > max_scan_blocks:
-            from_block = latest - max_scan_blocks
-
         while from_block <= latest:
             to_block = min(latest, from_block + self.block_range - 1)
+            # Fail-closed: if get_logs raises, propagate — do NOT return None
             logs = self.w3.eth.get_logs(
                 {
                     "fromBlock": from_block,
