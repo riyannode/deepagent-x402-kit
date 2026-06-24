@@ -645,3 +645,27 @@ x402 batching and nano doctor checks passed. Live x402 payment execution still r
 ## License
 
 MIT
+
+## ERC-8004 Reputation Production Flow
+
+This SDK supports:
+- policy-gated Circle DCW reputation writes
+- direct on-chain reads
+- local SQLite event indexing for feedback history
+- no fake feedback rows
+- no raw x402 payment header storage
+
+Run:
+
+```bash
+erc8004-deepagent reputation-index-once
+erc8004-deepagent reputation-index-status
+```
+
+Important:
+
+- `get_feedback_for_agent` reads the local indexer store.
+- If the indexer has not run, the tool returns `indexer_required`.
+- `get_reputation_summary` requires explicit client addresses to avoid untrusted Sybil/spam aggregation.
+- Reputation writes require `REPUTATION_WRITER_WALLET_ADDRESS`.
+- The writer wallet must not be the agent owner wallet.

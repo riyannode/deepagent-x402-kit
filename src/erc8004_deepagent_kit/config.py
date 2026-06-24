@@ -111,6 +111,10 @@ class KitConfig:
     circle_entity_secret: str | None
     dcw_wallet_address: str | None
     identity_store_path: Path
+    reputation_store_path: Path
+    reputation_indexer_from_block: int
+    reputation_indexer_block_range: int
+    reputation_writer_wallet_address: str | None
     agent_key: str
     agent_name: str
     agent_description: str
@@ -183,6 +187,10 @@ def load_config(env_file: str | None = None) -> KitConfig:
     if wallet:
         wallet = _require_address(wallet, "DCW_WALLET_ADDRESS")
 
+    reputation_writer_wallet = _env("REPUTATION_WRITER_WALLET_ADDRESS")
+    if reputation_writer_wallet:
+        reputation_writer_wallet = _require_address(reputation_writer_wallet, "REPUTATION_WRITER_WALLET_ADDRESS")
+
     agent_services = _env_json("AGENT_SERVICES_JSON", [])
     if not isinstance(agent_services, list):
         raise ValueError("AGENT_SERVICES_JSON must be a JSON array")
@@ -219,6 +227,10 @@ def load_config(env_file: str | None = None) -> KitConfig:
         circle_entity_secret=_env("CIRCLE_ENTITY_SECRET"),
         dcw_wallet_address=wallet,
         identity_store_path=Path(_env("IDENTITY_STORE_PATH", "/data/erc8004_identities.sqlite3") or "/data/erc8004_identities.sqlite3"),
+        reputation_store_path=Path(_env("REPUTATION_STORE_PATH", "/data/erc8004_reputation.sqlite3") or "/data/erc8004_reputation.sqlite3"),
+        reputation_indexer_from_block=_env_int("REPUTATION_INDEXER_FROM_BLOCK", _env_int("ERC8004_FROM_BLOCK", 41338000, min_value=0), min_value=0),
+        reputation_indexer_block_range=_env_int("REPUTATION_INDEXER_BLOCK_RANGE", 10000, min_value=1, max_value=10000),
+        reputation_writer_wallet_address=reputation_writer_wallet,
         agent_key=agent_key,
         agent_name=_env("AGENT_NAME", "Example ERC-8004 Deep Agent") or "Example ERC-8004 Deep Agent",
         agent_description=_env("AGENT_DESCRIPTION", "LangChain Deep Agent with ERC-8004 tools.") or "LangChain Deep Agent with ERC-8004 tools.",
