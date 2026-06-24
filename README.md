@@ -165,6 +165,48 @@ To use IPFS instead, upload your metadata JSON to [Pinata](https://pinata.cloud/
 
 ---
 
+## Gateway Funding (Required for x402)
+
+Before using x402 payment tools, deposit USDC to the Circle Gateway. Without a Gateway balance, x402 payments will fail.
+
+| | Value |
+|---|-------|
+| Gateway Address | `0x0077777d7EBA4688BDeF3E311b846F25870A19B9` |
+| Network | Arc Testnet (chain ID 5042002) |
+| Token | USDC (`0x3600000000000000000000000000000000000000`) |
+| Faucet | https://faucet.circle.com |
+
+**Quick start:**
+
+1. Get testnet USDC from https://faucet.circle.com
+2. Ask the agent to deposit: *"Deposit 0.01 USDC to Gateway"*
+3. Check balance: *"What's my Gateway balance?"*
+
+**Under the hood**, the agent calls:
+
+```
+gateway_deposit("0.01")
+  → DCW wallet transfers 0.01 USDC to Gateway address
+  → Returns tx_hash + explorer_url
+
+x402_batch_balance("0xYourWallet")
+  → Reads Gateway balance (no payment)
+```
+
+**How it works:**
+- `gateway_deposit` calls `transfer(address,uint256)` on the USDC contract via Circle DCW
+- The DCW wallet sends USDC to the Gateway wallet address
+- Gateway tracks balance per sender address
+- x402 payments deduct from this balance
+- Gateway batches settlements on-chain (buyer pays 0 gas)
+
+**Safety limits:**
+- Max single deposit: 100 USDC
+- Only transfers to Gateway address allowed (policy-enforced)
+- WalletPolicy rejects USDC transfers to any other destination
+
+---
+
 ## Circle x402 Payment Tools
 
 Two mutually exclusive modes. Set `X402_MODE` to choose one.
@@ -190,6 +232,7 @@ For high-frequency agent commerce. Uses `@circle-fin/x402-batching` (BatchFacili
 4. Python updates ledger with tx_hash
 
 **Tools exposed to agent:**
+- `gateway_deposit(amount_usdc)` — Deposit USDC to Gateway (required before x402 payments)
 - `x402_batch_pay(url, method="GET")` — Buyer: pay for x402-batching endpoint
 - `x402_batch_sell_settle(payment_signature, resource, request_id)` — Seller: verify + settle
 - `x402_batch_balance(wallet_address)` — Read Gateway balance

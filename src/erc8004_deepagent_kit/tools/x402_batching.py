@@ -186,3 +186,72 @@ def x402_batch_balance(wallet_address: str) -> dict:
     if not ADDRESS_RE.match(wallet_address):
         raise ValueError(f"Invalid address: {wallet_address}")
     return _run({"mode": "balance", "walletAddress": wallet_address})
+
+
+@tool
+def gateway_deposit(amount_usdc: str) -> dict:
+    """Deposit USDC to Circle Gateway for x402 payments.
+
+    Transfers USDC from the configured DCW wallet to the Gateway wallet.
+    The Gateway balance is used for x402 payment batching — without a
+    balance, x402 payments will fail.
+
+    Args:
+        amount_usdc: Amount in USDC (e.g. "0.01" for 1 cent)
+
+    Returns:
+        Transaction result with tx_hash and explorer_url.
+    """
+    from ..wallet.contract_executor import CircleNodeSidecarExecutor
+    from ..wallet.dcw import get_configured_wallet
+    from ..wallet.policy import ContractCallIntent, WalletPolicy
+
+    cfg = load_config()
+    wallet = get_configured_wallet()
+
+    # Convert USDC display units to atomic (6 decimals)
+    try:
+        amount_float = float(amount_usdc)
+    except (ValueError, TypeError):
+        raise ValueError(f"Invalid amount_usdc: {amount_usdc!r}")
+    if amount_float <= 0:
+        raise ValueError("amount_usdc must be positive")
+    if amount_float > 100:
+        raise ValueError("amount_usdc exceeds safety limit (100 USDC)")
+
+    amount_atomic = str(int(amount_float * 1_000_000))
+
+    USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
+    GATEWAY_ADDRESS = "0x0077777d7EBA4688BDeF3E311b846F25870A19B9"
+
+    intent = ContractCallIntent(
+        wallet_address=wallet.address,
+        blockchain="ARC-TESTNET",
+        contract_address=USDC_ADDRESS,
+        abi_function_signature="transfer(address,uint256)",
+        abi_parameters=[GATEWAY_ADDRESS, amount_atomic],
+    )
+
+    policy = WalletPolicy(
+        identity_registry=cfg.identity_registry,
+        reputation_registry=cfg.reputation_registry,
+        validation_registry=cfg.validation_registry,
+        enable_reputation_writes=cfg.enable_reputation_writes,
+        enable_validation_writes=cfg.enable_validation_writes,
+    )
+
+    executor = CircleNodeSidecarExecutor(policy=policy)
+    result = executor.execute(intent)
+
+    explorer_url = f"{cfg.explorer_url}/tx/{result.tx_hash}"
+
+    return {
+        "ok": True,
+        "mode": "gateway_deposit",
+        "amount_usdc": amount_usdc,
+        "amount_atomic": amount_atomic,
+        "tx_hash": result.tx_hash,
+        "explorer_url": explorer_url,
+        "circle_transaction_id": result.circle_transaction_id,
+        "gateway_address": GATEWAY_ADDRESS,
+    }

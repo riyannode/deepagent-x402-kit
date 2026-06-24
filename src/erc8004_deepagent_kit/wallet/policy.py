@@ -52,4 +52,17 @@ class WalletPolicy:
                 raise PermissionError("validation writes are disabled by policy")
             return
 
+        # x402 Gateway deposit: USDC transfer(address,uint256) to Gateway wallet
+        USDC_ADDRESS = Web3.to_checksum_address("0x3600000000000000000000000000000000000000")
+        GATEWAY_ADDRESS = Web3.to_checksum_address("0x0077777d7EBA4688BDeF3E311b846F25870A19B9")
+        if contract == USDC_ADDRESS and sig == "transfer(address,uint256)":
+            if len(intent.abi_parameters) != 2:
+                raise PermissionError("transfer(address,uint256) requires exactly 2 parameters")
+            destination = Web3.to_checksum_address(str(intent.abi_parameters[0]))
+            if destination != GATEWAY_ADDRESS:
+                raise PermissionError(
+                    f"USDC transfer only allowed to Gateway ({GATEWAY_ADDRESS}), got: {destination}"
+                )
+            return
+
         raise PermissionError(f"contract call not allowed: {contract} {sig}")

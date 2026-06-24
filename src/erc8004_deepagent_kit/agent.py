@@ -8,7 +8,7 @@ from .tools.identity import get_agent_metadata, get_agent_wallet, get_identity_s
 from .tools.registry_status import get_erc8004_config
 from .tools.reputation import get_feedback_for_agent, get_reputation_summary, record_reputation_feedback
 from .tools.validation import get_validation_status, request_validation, submit_validation_response
-from .tools.x402_batching import x402_batch_balance, x402_batch_pay, x402_batch_sell_settle
+from .tools.x402_batching import gateway_deposit, x402_batch_balance, x402_batch_pay, x402_batch_sell_settle
 from .tools.x402_nano import x402_nano_balance, x402_nano_pay, x402_nano_sell_settle
 
 
@@ -33,6 +33,8 @@ def build_erc8004_deep_agent(model: str | None = None):
 
     # x402 payment tools — granular exposure
     if cfg.x402_enabled:
+        tools.append(gateway_deposit)
+
         if cfg.x402_expose_balance_to_agent:
             tools.extend([x402_batch_balance, x402_nano_balance])
 
