@@ -2,7 +2,7 @@
 
 Standalone SDK for Arc/Circle and single-wallet ERC-8004 + x402 DeepAgent built on **LangChain**.
 
-One Circle Developer-Controlled Wallet (DCW) = one on-chain ERC-8004 agent identity (ERC-721 NFT) on Arc Testnet. The Deep Agent can bootstrap its identity once via `register_identity_once`. Optional Circle x402 payment tools are policy-gated and off by default.
+One Circle Developer-Controlled Wallet (DCW) = one on-chain ERC-8004 agent identity (ERC-721 NFT) on Arc Testnet. The Deep Agent can bootstrap its identity once via `register_identity_once`. Optional Circle x402 payment tools are policy-gated and off by default, you can turn it on for hit endpoint
 
 **Built on LangChain / Deep Agents.** The agent logic, tools, system prompt, and LLM routing are all standard LangChain — you can fork this repo and modify the agent behavior, add tools, change the model, swap the system prompt, or integrate it into any LangChain-compatible pipeline. The SDK provides building blocks, not a black box.
 
