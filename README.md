@@ -502,26 +502,26 @@ erc8004-deepagent agent-register      # Let the Deep Agent register via tools
 `erc8004-deepagent doctor` validates your entire environment **without sending any transaction and without signing any typed data.**
 
 ### Identity checks (always):
-- Registry addresses are valid EVM addresses
-- `DCW_WALLET_ADDRESS` is configured
-- `CIRCLE_API_KEY` and `CIRCLE_ENTITY_SECRET` are present
-- Identity store parent directory exists
-- RPC chain ID matches `CHAIN_ID` (5042002)
-- IdentityRegistry contract has bytecode at the configured address
-- Latest block >= `ERC8004_FROM_BLOCK`
+- [x] Registry addresses are valid EVM addresses
+- [ ] `DCW_WALLET_ADDRESS` is configured (needs `.env`)
+- [ ] `CIRCLE_API_KEY` and `CIRCLE_ENTITY_SECRET` are present (needs `.env`)
+- [x] Identity store parent directory exists
+- [x] RPC chain ID matches `CHAIN_ID` (5042002)
+- [x] IdentityRegistry contract has bytecode at the configured address
+- [x] Latest block >= `ERC8004_FROM_BLOCK`
 
 ### x402 checks (when `X402_ENABLED=true`):
-- Sidecar files exist: `scripts/x402_batching.mjs`, `scripts/x402_nano.mjs`
-- If `X402_MODE=batching`: `@circle-fin/x402-batching` package is importable
-- `X402_GATEWAY_API_URL` is configured
-- `X402_LEDGER_PATH` directory is writable
+- [x] Sidecar files exist: `scripts/x402_batching.mjs`, `scripts/x402_nano.mjs`
+- [x] If `X402_MODE=batching`: `@circle-fin/x402-batching` package is importable
+- [x] `X402_GATEWAY_API_URL` is configured
+- [x] `X402_LEDGER_PATH` directory is writable
 
 ### Buyer exposure checks (when buyer tools exposed):
-- `X402_DEFAULT_BUYER_WALLET_ID` is non-empty
-- `X402_ALLOWED_HOSTS` is non-empty
+- [ ] `X402_DEFAULT_BUYER_WALLET_ID` is non-empty (needs `.env`)
+- [ ] `X402_ALLOWED_HOSTS` is non-empty (needs `.env`)
 
 ### Seller exposure checks (when seller tools exposed):
-- `X402_DEFAULT_SELLER_WALLET_ADDRESS` is non-empty
+- [ ] `X402_DEFAULT_SELLER_WALLET_ADDRESS` is non-empty (needs `.env`)
 
 ---
 
